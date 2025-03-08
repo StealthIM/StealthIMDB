@@ -1,0 +1,4 @@
+StealthIM.DBGateway
+bin
+config.toml
+__debug*

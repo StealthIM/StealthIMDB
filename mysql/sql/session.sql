@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS `session_db` (
+    `session_id` VARCHAR(255) PRIMARY KEY,
+    `uid` INT(32) NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

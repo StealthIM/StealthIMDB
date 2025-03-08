@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS `messages` (
+    `msgid` BIGINT(64) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `content` TEXT NOT NULL,
+    `type` ENUM('text', 'file') NOT NULL,
+    `timestamp` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `fileid` BIGINT(64) NULL,
+    `delete` BOOLEAN NOT NULL DEFAULT FALSE
+);

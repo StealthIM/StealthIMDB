@@ -1,0 +1,35 @@
+[mysql]
+host = "127.0.0.1"           # Mysql地址
+port = 3306                  # Mysql端口
+maxconn = 50                 # 最大连接数
+minconn = 10                 # 最小连接数
+user = "root"                # 用户名，首次建议使用root，之后可以创建新用户
+password = "<YOUR_PASSWORD>" # 密码
+
+#     下面单独设置每一个数据库的配置
+#   若某项设置未填写则使用上方全局配置
+# [mysql.db_msg]
+# [mysql.db_users]
+# [mysql.masterdb]
+# [mysql.logging]
+# [mysql.groups]
+# [mysql.file]
+# [mysql.session]
+# host = "127.0.0.1"
+# port = 3306
+# maxconn = 50
+# minconn = 10
+# user = "root"
+# password = "<YOUR_PASSWORD>"
+
+[redis]
+host = "127.0.0.1"           # Redis地址
+port = 6379                  # Redis端口
+dbname = 0                   # 数据库编号，通常无需改动
+password = "<YOUR_PASSWORD>" # 密码
+cachetime = 3600             # 缓存时间，单位秒
+
+[grpc]
+host = "127.0.0.1" # GRPC地址
+port = 50051       # GRPC监听端口
+log = false        # 启用日志，调试功能，上线建议关闭

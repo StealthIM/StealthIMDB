@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS `system_logs` (
+    `logid` BIGINT(64) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `timestamp` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `log_level` ENUM('INFO', 'WARN', 'ERROR') NOT NULL,
+    `message` TEXT NOT NULL,
+    `source` VARCHAR(128)
+);

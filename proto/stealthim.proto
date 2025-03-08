@@ -1,0 +1,262 @@
+syntax = "proto3";
+
+option go_package = "StealthIM/Proto/Main";
+option java_package = "com.StealthIM.Proto.Main";
+option java_outer_classname = "MainProto";
+option csharp_namespace = "StealthIM.Proto.Main";
+option java_multiple_files = true;
+
+service StealthIM {
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc RefreshSession(RefreshSessionRequest) returns (LoginResponse);
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc ChangeNickname(ChangeNicknameRequest) returns (ChangeNicknameResponse);
+  rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+  rpc GetGroupList(GetGroupListRequest) returns (GetGroupListResponse);
+  rpc PullGroupMessage(PullGroupMessageRequest)
+      returns (PullGroupMessageResponse);
+  rpc GroupManagerAddMember(GroupManagerAddMemberRequest)
+      returns (GroupManagerAddMemberResponse);
+  rpc GroupManagerAddBroadCast(GroupManagerAddBroadCastRequest)
+      returns (GroupManagerAddBroadCastResponse);
+  rpc GroupManagerRemoveBroadCast(GroupManagerRemoveBroadCastRequest)
+      returns (GroupManagerRemoveBroadCastResponse);
+  rpc GroupManagerChangeGroupPassword(GroupManagerChangeGroupPasswordRequest)
+      returns (GroupManagerChangeGroupPasswordResponse);
+  rpc GroupManagerRemoveMember(GroupManagerRemoveMemberRequest)
+      returns (GroupManagerRemoveMemberResponse);
+  rpc GroupAdminSetManager(GroupAdminSetManagerRequest)
+      returns (GroupAdminSetManagerResponse);
+  rpc GroupAdminTransfer(GroupAdminTransferRequest)
+      returns (GroupAdminTransferResponse);
+  rpc UploadFile(UploadFileRequest) returns (UploadFileResponse);
+}
+
+message Result {
+  int32 code = 1;
+  string msg = 2;
+  string advice = 3;
+  bool hitcache = 4;
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message RefreshSessionRequest { string session = 1; }
+
+message RegisterRequest {
+  string username = 1;
+  string nickname = 2;
+  string password = 3;
+}
+
+message LoginResponse {
+  Result result = 1;
+  string session = 2;
+  int32 uid = 4;
+}
+
+message RegisterResponse {
+  Result result = 1;
+  string session = 2;
+  int32 uid = 4;
+}
+
+message ChangeNicknameRequest {
+  string session = 1;
+  string nickname = 2;
+}
+
+message ChangeNicknameResponse { Result result = 1; }
+
+message ChangePasswordRequest {
+  string session = 1;
+  string password = 2;
+}
+
+message ChangePasswordResponse { Result result = 1; }
+
+message GetPublicUserInfomationRequest { string username = 1; }
+
+message GetPublicUserInfomationResponse {
+  Result result = 1;
+  string nickname = 2;
+  int32 uid = 3;
+}
+
+message GetPrivateUserInfomationRequest { string session = 1; }
+
+message GetPrivateUserInfomationResponse {
+  Result result = 1;
+  string nickname = 2;
+  int32 uid = 3;
+  // ...
+}
+
+message AddGropupRequest {
+  string session = 1;
+  int32 groupid = 2;
+  string password = 3;
+}
+
+message AddGropupResponse { Result result = 1; }
+
+message CreateGroupRequest {
+  string session = 1;
+  string groupname = 2;
+  string password = 3;
+}
+
+message CreateGroupResponse {
+  Result result = 1;
+  int32 groupid = 2;
+}
+
+message GetGroupPublicInfoRequest { int32 groupid = 1; }
+
+message GetGroupPublicInfoResponse { string name = 1; }
+
+enum GroupMemberType {
+  member = 0;
+  manager = 1;
+  owner = 2;
+  other = 3;
+}
+
+message GroupMember {
+  string username = 1;
+  string nickname = 2;
+  string userid = 3;
+  GroupMemberType type = 4;
+}
+
+message GetGroupPrivateInfoRequest {
+  string session = 1;
+  int32 groupid = 2;
+}
+
+message GetGroupPrivateInfoResponse {
+  string name = 1;
+  repeated string broadcasts = 2;
+  repeated GroupMember members = 3;
+  GroupMemberType usertype = 4;
+}
+
+message SendMessageRequest {
+  string session = 1;
+  int32 groupid = 2;
+  string content = 3;
+  enum type {
+    markdown = 0;
+    text = 1;
+    image = 2;
+    file = 3;
+  };
+  repeated string atlist = 4;
+}
+
+message SendMessageResponse {
+  Result result = 1;
+  int64 msgid = 2;
+  int64 time = 3;
+}
+
+message GroupListItem {
+  int32 groupid = 1;
+  string name = 2;
+  string lastmsg = 3;
+  int32 msgcount = 4;
+}
+
+message GetGroupListRequest { string session = 1; }
+
+message GetGroupListResponse {
+  Result result = 1;
+  int32 groupid = 2;
+}
+
+message PullGroupMessageItem {
+  int64 msgid = 1;
+  string content = 2;
+  string sender = 3;
+  int64 time = 4;
+}
+
+message PullGroupMessageRequest {
+  string session = 1;
+  int32 groupid = 2;
+  int64 msgid = 3;
+}
+
+message PullGroupMessageResponse {
+  Result result = 1;
+  repeated PullGroupMessageItem items = 2;
+}
+
+message GroupManagerAddMemberRequest {
+  string session = 1;
+  int32 groupid = 2;
+  string username = 3;
+}
+
+message GroupManagerAddMemberResponse { Result result = 1; }
+
+message GroupManagerAddBroadCastRequest {
+  string session = 1;
+  int32 groupid = 2;
+  string content = 3;
+}
+
+message GroupManagerAddBroadCastResponse { Result result = 1; }
+
+message GroupManagerRemoveBroadCastRequest {
+  string session = 1;
+  int32 groupid = 2;
+  int32 index = 3;
+}
+
+message GroupManagerRemoveBroadCastResponse { Result result = 1; }
+
+message GroupManagerChangeGroupPasswordRequest {
+  string session = 1;
+  int32 groupid = 2;
+  string password = 3;
+}
+
+message GroupManagerChangeGroupPasswordResponse { Result result = 1; }
+
+message GroupManagerRemoveMemberRequest {
+  string session = 1;
+  int32 groupid = 2;
+  string username = 3;
+}
+
+message GroupManagerRemoveMemberResponse { Result result = 1; }
+
+message GroupAdminSetManagerRequest {
+  string session = 1;
+  int32 groupid = 2;
+  string username = 3;
+  bool isManager = 4;
+}
+
+message GroupAdminSetManagerResponse { Result result = 1; }
+
+message GroupAdminTransferRequest {
+  string session = 1;
+  int32 groupid = 2;
+  string username = 3;
+}
+
+message GroupAdminTransferResponse { Result result = 1; }
+
+message UploadFileRequest {
+  string session = 1;
+  string filename = 3;
+  bytes data = 4;
+}
+
+message UploadFileResponse { Result result = 1; }
