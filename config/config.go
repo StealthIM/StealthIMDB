@@ -1,6 +1,7 @@
 package config
 
 import (
+	"flag"
 	"log"
 	"os"
 
@@ -10,10 +11,12 @@ import (
 // Version 版本号
 const Version = "0.0.1"
 
-const cfgPath = "config.toml"
+var cfgPath = "config.toml"
 
 // ReadConf 读取配置
 func ReadConf() Config {
+	flag.StringVar(&cfgPath, "config", "config.toml", "配置文件位置")
+	flag.Parse()
 	initCfg()
 	data, err := os.ReadFile(cfgPath)
 	if err != nil {

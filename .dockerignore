@@ -1,0 +1,12 @@
+StealthIM.DBGateway
+bin
+config.toml
+__debug*
+.git
+.vscode
+Dockerfile
+.dockerignore
+.gitignore
+LICENSE
+README.md
+docker-compose.yml

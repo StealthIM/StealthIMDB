@@ -36,7 +36,18 @@ build: ./bin/$(DEFAULT_BUILD_FILENAME)
 build_win: ./bin/StealthIMDB.exe
 build_linux: ./bin/StealthIMDB
 
-release: build_win build_linux
+docker_run:
+	docker-compose up
+
+./bin/StealthIMDB.docker.zst: $(GO_FILES) proto
+	docker-compose build
+	docker save stealthimdb-app > ./bin/StealthIMDB.docker
+	zstd ./bin/StealthIMDB.docker -19
+	@rm ./bin/StealthIMDB.docker
+
+build_docker: ./bin/StealthIMDB.docker.zst
+
+release: build_win build_linux build_docker
 
 clean:
 	@rm -rf ./StealthIM.DBGateway
