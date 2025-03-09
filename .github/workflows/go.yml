@@ -45,7 +45,7 @@ jobs:
 
     - name: Install Docker Compose
       run: |
-        sudo wget "https://github.com/docker/compose/releases/download/latest/docker-compose-linux-x86_64" -O /usr/bin/docker-compose
+        sudo wget "https://github.com/docker/compose/releases/download/v2.33.1/docker-compose-linux-x86_64" -O /usr/bin/docker-compose
         sudo chmod +x /usr/bin/docker-compose
 
     - name: Build and Release
