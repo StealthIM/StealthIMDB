@@ -3,11 +3,10 @@ name: Release
 on:
   push:
     branches:
-      - main  # 你可以根据需要更改触发条件
+      - main
   pull_request:
     branches:
-      - main  # 你可以根据需要更改触发条件
-  workflow_dispatch:  # 允许手动触发
+      - main
 
 jobs:
   release:
@@ -51,11 +50,20 @@ jobs:
     - name: Build and Release
       run: make release
 
-    - name: Upload artifacts
+    - name: Upload artifacts 1
       uses: actions/upload-artifact@v4
       with:
-        name: release-artifacts
-        path: |
-          ./bin/StealthIMDB
-          ./bin/StealthIMDB.exe
-          ./bin/StealthIMDB.docker.zst
+        name: StealthIMDB
+        path: ./bin/StealthIMDB
+          
+    - name: Upload artifacts 2 
+      uses: actions/upload-artifact@v4
+      with:
+        name: StealthIMDB.exe
+        path: ./bin/StealthIMDB.exe
+          
+    - name: Upload artifacts 3
+      uses: actions/upload-artifact@v4
+      with:
+        name: StealthIMDB.docker.zst
+        path: ./bin/StealthIMDB.docker.zst
