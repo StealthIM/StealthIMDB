@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main  # 你可以根据需要更改触发条件
+  pull_request:
+    branches:
+      - main  # 你可以根据需要更改触发条件
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.24.0'
+
+    - name: Enable Go Modules and Download Dependencies
+      run: |
+        go mod tidy
+        go mod download
+
+    - name: Install protoc
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y protobuf-compiler
+        go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+        go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+        echo "$GOPATH/bin" >> $GITHUB_PATH
+
+    - name: Build and Release
+      run: make release
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-artifacts
+        path: |
+          ./bin/StealthIMDB
+          ./bin/StealthIMDB.exe
+          ./bin/StealthIMDB.docker.zst
