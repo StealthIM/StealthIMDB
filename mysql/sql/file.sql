@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS `files` (
     `fileid` BIGINT(64) NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `filename` VARCHAR(256) NOT NULL,
-    `filepath` VARCHAR(512) NOT NULL,
+    `blocks` LONGBLOB NOT NULL,
     `filesize` INT NOT NULL,
     `upload_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `upload_uid` INT(32) NOT NULL,
