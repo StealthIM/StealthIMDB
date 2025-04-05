@@ -39,9 +39,10 @@ enum SqlDatabases {
 message SqlRequest {
   string sql = 1;
   SqlDatabases db = 2;
-  bool commit = 3;
-  bool get_row_count = 4;
-  bool get_last_insert_id = 5;
+  repeated InterFaceType params = 3;
+  bool commit = 4;
+  bool get_row_count = 5;
+  bool get_last_insert_id = 6;
 }
 
 message InterFaceType {

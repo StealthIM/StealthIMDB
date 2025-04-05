@@ -61,7 +61,27 @@ func (s *server) Mysql(ctx context.Context, in *pb.SqlRequest) (*pb.SqlResponse,
 		}
 		return &pb.SqlResponse{Result: &pb.Result{Code: 0, Msg: ""}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 	}
-	rows, err := db.Query(in.Sql)
+	args := make([]any, len(in.Params))
+	for i, obj := range in.Params {
+		if x, ok := obj.Response.(*pb.InterFaceType_Int32); ok {
+			args[i] = x.Int32
+		} else if x, ok := obj.Response.(*pb.InterFaceType_Int64); ok {
+			args[i] = x.Int64
+		} else if x, ok := obj.Response.(*pb.InterFaceType_Str); ok {
+			args[i] = x.Str
+		} else if x, ok := obj.Response.(*pb.InterFaceType_Float); ok {
+			args[i] = x.Float
+		} else if x, ok := obj.Response.(*pb.InterFaceType_Double); ok {
+			args[i] = x.Double
+		} else if x, ok := obj.Response.(*pb.InterFaceType_Bool); ok {
+			args[i] = x.Bool
+		} else if x, ok := obj.Response.(*pb.InterFaceType_Blob); ok {
+			args[i] = x.Blob
+		} else {
+			args[i] = nil
+		}
+	}
+	rows, err := db.Query(in.Sql, args...)
 	if err != nil {
 		return &pb.SqlResponse{Result: &pb.Result{Code: -1, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 	}
