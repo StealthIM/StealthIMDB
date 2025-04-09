@@ -32,13 +32,33 @@ func (s *server) Mysql(ctx context.Context, in *pb.SqlRequest) (*pb.SqlResponse,
 	if db == nil {
 		return &pb.SqlResponse{Result: &pb.Result{Code: -1, Msg: "ConnectError"}}, nil
 	}
+	args := make([]any, len(in.Params))
+	for i, obj := range in.Params {
+		if x, ok := obj.Response.(*pb.InterFaceType_Int32); ok {
+			args[i] = x.Int32
+		} else if x, ok := obj.Response.(*pb.InterFaceType_Int64); ok {
+			args[i] = x.Int64
+		} else if x, ok := obj.Response.(*pb.InterFaceType_Str); ok {
+			args[i] = x.Str
+		} else if x, ok := obj.Response.(*pb.InterFaceType_Float); ok {
+			args[i] = x.Float
+		} else if x, ok := obj.Response.(*pb.InterFaceType_Double); ok {
+			args[i] = x.Double
+		} else if x, ok := obj.Response.(*pb.InterFaceType_Bool); ok {
+			args[i] = x.Bool
+		} else if x, ok := obj.Response.(*pb.InterFaceType_Blob); ok {
+			args[i] = x.Blob
+		} else {
+			args[i] = nil
+		}
+	}
 	if in.Commit {
 		tx, err := db.Begin()
 		if err != nil {
 			return &pb.SqlResponse{Result: &pb.Result{Code: 1, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 		}
 		var result sql.Result
-		result, err = tx.Exec(in.Sql)
+		result, err = tx.Exec(in.Sql, args...)
 		if err != nil {
 			tx.Rollback()
 			return &pb.SqlResponse{Result: &pb.Result{Code: -2, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
@@ -60,26 +80,6 @@ func (s *server) Mysql(ctx context.Context, in *pb.SqlRequest) (*pb.SqlResponse,
 			return &pb.SqlResponse{Result: &pb.Result{Code: -3, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 		}
 		return &pb.SqlResponse{Result: &pb.Result{Code: 0, Msg: ""}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
-	}
-	args := make([]any, len(in.Params))
-	for i, obj := range in.Params {
-		if x, ok := obj.Response.(*pb.InterFaceType_Int32); ok {
-			args[i] = x.Int32
-		} else if x, ok := obj.Response.(*pb.InterFaceType_Int64); ok {
-			args[i] = x.Int64
-		} else if x, ok := obj.Response.(*pb.InterFaceType_Str); ok {
-			args[i] = x.Str
-		} else if x, ok := obj.Response.(*pb.InterFaceType_Float); ok {
-			args[i] = x.Float
-		} else if x, ok := obj.Response.(*pb.InterFaceType_Double); ok {
-			args[i] = x.Double
-		} else if x, ok := obj.Response.(*pb.InterFaceType_Bool); ok {
-			args[i] = x.Bool
-		} else if x, ok := obj.Response.(*pb.InterFaceType_Blob); ok {
-			args[i] = x.Blob
-		} else {
-			args[i] = nil
-		}
 	}
 	rows, err := db.Query(in.Sql, args...)
 	if err != nil {
