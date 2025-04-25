@@ -19,7 +19,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.24.0'
+        go-version: '1.24.2'
 
     - name: Enable Go Modules and Download Dependencies
       run: |
@@ -67,3 +67,34 @@ jobs:
       with:
         name: StealthIMDB.docker.zst
         path: ./bin/StealthIMDB.docker.zst
+
+  upload-package:
+    runs-on: ubuntu-latest
+    needs: release
+
+    steps:
+    - name: Download File
+      uses: actions/download-artifact@v4
+      with:
+        name: StealthIMDB.docker.zst
+
+    - name: Unpack File
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y zstd
+        zstd -d StealthIMDB.docker.zst
+
+    - name: Load Docker image
+      run: docker load -i StealthIMDB.docker
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.PKGTOKEN }}
+
+    - name: Tag and push Docker image
+      run: |
+        docker tag $(docker images -q | head -n 1) ghcr.io/$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')/$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')/stealthimdb-app:latest
+        docker push ghcr.io/$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')/$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')/stealthimdb-app:latest
