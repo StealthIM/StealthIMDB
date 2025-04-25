@@ -71,6 +71,8 @@ jobs:
   upload-package:
     runs-on: ubuntu-latest
     needs: release
+    permissions:
+      packages: write
 
     steps:
     - name: Download File
