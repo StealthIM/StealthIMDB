@@ -2,6 +2,7 @@ package grpc
 
 import (
 	pb "StealthIMDB/StealthIM.DBGateway"
+	"StealthIMDB/errorcode"
 	"StealthIMDB/mysql"
 	"context"
 	"database/sql"
@@ -30,7 +31,7 @@ func (s *server) Mysql(ctx context.Context, in *pb.SqlRequest) (*pb.SqlResponse,
 
 	db := mysql.GetConn(int32(in.Db) + 1)()
 	if db == nil {
-		return &pb.SqlResponse{Result: &pb.Result{Code: -1, Msg: "ConnectError"}}, nil
+		return &pb.SqlResponse{Result: &pb.Result{Code: errorcode.ServerInternalNetworkError, Msg: "ConnectError"}}, nil
 	}
 	args := make([]any, len(in.Params))
 	for i, obj := range in.Params {
@@ -55,46 +56,46 @@ func (s *server) Mysql(ctx context.Context, in *pb.SqlRequest) (*pb.SqlResponse,
 	if in.Commit {
 		tx, err := db.Begin()
 		if err != nil {
-			return &pb.SqlResponse{Result: &pb.Result{Code: 1, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
+			return &pb.SqlResponse{Result: &pb.Result{Code: errorcode.DBGatewaySQLTransactionError, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 		}
 		var result sql.Result
 		result, err = tx.Exec(in.Sql, args...)
 		if err != nil {
 			tx.Rollback()
-			return &pb.SqlResponse{Result: &pb.Result{Code: -2, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
+			return &pb.SqlResponse{Result: &pb.Result{Code: errorcode.DBGatewaySQLExecuteError, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 		}
 		if in.GetRowCount {
 			rowCount, err = result.RowsAffected()
 			if err != nil {
-				return &pb.SqlResponse{Result: &pb.Result{Code: -4, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
+				return &pb.SqlResponse{Result: &pb.Result{Code: errorcode.DBGatewaySQLExecuteError, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 			}
 		}
 		if in.GetLastInsertId {
 			lastInsertID, err = result.LastInsertId()
 			if err != nil {
-				return &pb.SqlResponse{Result: &pb.Result{Code: -5, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
+				return &pb.SqlResponse{Result: &pb.Result{Code: errorcode.DBGatewaySQLExecuteError, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 			}
 		}
 		err = tx.Commit()
 		if err != nil {
-			return &pb.SqlResponse{Result: &pb.Result{Code: -3, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
+			return &pb.SqlResponse{Result: &pb.Result{Code: errorcode.DBGatewaySQLTransactionError, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 		}
 		return &pb.SqlResponse{Result: &pb.Result{Code: 0, Msg: ""}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 	}
 	rows, err := db.Query(in.Sql, args...)
 	if err != nil {
-		return &pb.SqlResponse{Result: &pb.Result{Code: -1, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
+		return &pb.SqlResponse{Result: &pb.Result{Code: errorcode.DBGatewaySQLExecuteError, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 	}
 	defer rows.Close()
 
 	columns, err := rows.Columns()
 	if err != nil {
-		return &pb.SqlResponse{Result: &pb.Result{Code: -2, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
+		return &pb.SqlResponse{Result: &pb.Result{Code: errorcode.DBGatewaySQLExecuteError, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 	}
 
 	types, err := rows.ColumnTypes()
 	if err != nil {
-		return &pb.SqlResponse{Result: &pb.Result{Code: -3, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
+		return &pb.SqlResponse{Result: &pb.Result{Code: errorcode.DBGatewaySQLExecuteError, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 	}
 
 	// 创建一个切片来保存每一行的数据
@@ -158,11 +159,11 @@ func (s *server) Mysql(ctx context.Context, in *pb.SqlRequest) (*pb.SqlResponse,
 			case "BOOLEAN", "TINYINT(1)":
 				dataTmp[i] = &pb.InterFaceType{Response: &pb.InterFaceType_Bool{Bool: val.(bool)}, Null: isnull}
 			default:
-				return &pb.SqlResponse{Result: &pb.Result{Code: -4, Msg: "Unknown type: " + types[i].DatabaseTypeName()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
+				return &pb.SqlResponse{Result: &pb.Result{Code: errorcode.DBGatewaySQLUnknownTypeError, Msg: "Unknown type: " + types[i].DatabaseTypeName()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 			}
 		}
 		datas = append(datas, &pb.SqlLine{Result: dataTmp})
 		lncnt++
 	}
-	return &pb.SqlResponse{Result: &pb.Result{Code: 0, Msg: ""}, RowsAffected: rowCount, LastInsertId: lastInsertID, Data: datas}, nil
+	return &pb.SqlResponse{Result: &pb.Result{Code: errorcode.Success, Msg: ""}, RowsAffected: rowCount, LastInsertId: lastInsertID, Data: datas}, nil
 }
