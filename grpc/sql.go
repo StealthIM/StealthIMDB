@@ -146,8 +146,20 @@ func (s *server) Mysql(ctx context.Context, in *pb.SqlRequest) (*pb.SqlResponse,
 					val = make([]byte, 0)
 				}
 				dataTmp[i] = &pb.InterFaceType{Response: &pb.InterFaceType_Int32{Int32: int32(val.(int64))}, Null: isnull}
+			case "UNSIGNED TINYINT", "UNSIGNED INT(8)", "UNSIGNED SMALLINT", "UNSIGNED INT(16)", "UNSIGNED INT", "UNSIGNED INTEGER", "UNSIGNED MEDIUMINT", "UNSIGNED INT(32)":
+				if isnull {
+					isnull = true
+					val = make([]byte, 0)
+				}
+				dataTmp[i] = &pb.InterFaceType{Response: &pb.InterFaceType_Uint32{Uint32: uint32(val.(int64))}, Null: isnull}
 			case "BIGINT", "INT(64)":
 				dataTmp[i] = &pb.InterFaceType{Response: &pb.InterFaceType_Int64{Int64: val.(int64)}, Null: isnull}
+			case "UNSIGNED BIGINT", "UNSIGNED INT(64)":
+				valx, ok := val.(uint64)
+				if ok {
+					dataTmp[i] = &pb.InterFaceType{Response: &pb.InterFaceType_Uint64{Uint64: valx}, Null: isnull}
+				}
+				dataTmp[i] = &pb.InterFaceType{Response: &pb.InterFaceType_Uint64{Uint64: uint64(val.(int64))}, Null: isnull}
 			case "FLOAT":
 				dataTmp[i] = &pb.InterFaceType{Response: &pb.InterFaceType_Float{Float: val.(float32)}, Null: isnull}
 			case "DOUBLE":
