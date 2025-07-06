@@ -2,7 +2,7 @@ package errorcode
 
 const (
 	// DBGatewayRedisServiceError Redis数据库错误
-	DBGatewayRedisServiceError int32 = 1100 + iota
+	DBGatewayRedisServiceError int32 = 2000 + iota
 	// DBGatewaySQLTransactionError SQL事务错误
 	DBGatewaySQLTransactionError
 	// DBGatewaySQLExecuteError SQL执行错误
