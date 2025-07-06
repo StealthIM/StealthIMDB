@@ -80,7 +80,7 @@ func (s *server) Mysql(ctx context.Context, in *pb.SqlRequest) (*pb.SqlResponse,
 		if err != nil {
 			return &pb.SqlResponse{Result: &pb.Result{Code: errorcode.DBGatewaySQLTransactionError, Msg: err.Error()}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 		}
-		return &pb.SqlResponse{Result: &pb.Result{Code: 0, Msg: ""}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
+		return &pb.SqlResponse{Result: &pb.Result{Code: errorcode.Success, Msg: ""}, RowsAffected: rowCount, LastInsertId: lastInsertID}, nil
 	}
 	rows, err := db.Query(in.Sql, args...)
 	if err != nil {
