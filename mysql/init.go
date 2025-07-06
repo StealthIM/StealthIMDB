@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"StealthIMDB/errorcode"
 	"database/sql"
 	"fmt"
 	"log"
@@ -11,7 +12,7 @@ import (
 
 func initr(connID int) error {
 	if !conns[connID].online {
-		return &SQLDBErrorObj{Code: 1, Message: fmt.Sprintf("MySQL [%s] is not online", dbs[connID])}
+		return &SQLDBErrorObj{Code: int(errorcode.ServerInternalNetworkError), Message: fmt.Sprintf("MySQL [%s] is not online", dbs[connID])}
 	}
 	tx, err := conns[connID].conn.Begin()
 	if err != nil {

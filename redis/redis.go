@@ -2,6 +2,7 @@ package redis
 
 import (
 	"StealthIMDB/config"
+	"StealthIMDB/errorcode"
 	"context"
 	"fmt"
 	"log"
@@ -66,7 +67,7 @@ func initr(connID int) error {
 	db := conndb[connID].db
 	err := db.Set(ctx, "GatewayInfo", fmt.Sprintf("StealthIM:GTWINFO;Version:%s", config.Version), 0).Err()
 	if err != nil {
-		return &CacheRedisError{Code: 2, Message: "Redis init error"}
+		return &CacheRedisError{Code: int(errorcode.ServerInternalComponentError), Message: "Redis init error"}
 	}
 	return nil
 }
@@ -83,7 +84,7 @@ func conn(connID int) error {
 	time.Sleep(1 * time.Second)
 	_, err := db.Ping(ctx).Result()
 	if err != nil {
-		return &CacheRedisError{Code: 1, Message: "Redis connect error"}
+		return &CacheRedisError{Code: int(errorcode.ServerInternalNetworkError), Message: "Redis connect error"}
 	}
 	return nil
 }
