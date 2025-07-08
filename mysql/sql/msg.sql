@@ -24,13 +24,7 @@ CREATE TABLE IF NOT EXISTS msg (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci
 PARTITION BY
     RANGE COLUMNS (msg_id) (
-        PARTITION p0
-        VALUES
-            LESS THAN (12000000), -- 每个分区最大1200万条
-            PARTITION p1
-        VALUES
-            LESS THAN (24000000),
-            PARTITION perror
+        PARTITION pextra
         VALUES
             LESS THAN (MAXVALUE)
     );

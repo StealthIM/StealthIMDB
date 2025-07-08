@@ -158,8 +158,9 @@ func (s *server) Mysql(ctx context.Context, in *pb.SqlRequest) (*pb.SqlResponse,
 				valx, ok := val.(uint64)
 				if ok {
 					dataTmp[i] = &pb.InterFaceType{Response: &pb.InterFaceType_Uint64{Uint64: valx}, Null: isnull}
+				} else {
+					dataTmp[i] = &pb.InterFaceType{Response: &pb.InterFaceType_Uint64{Uint64: uint64(val.(int64))}, Null: isnull}
 				}
-				dataTmp[i] = &pb.InterFaceType{Response: &pb.InterFaceType_Uint64{Uint64: uint64(val.(int64))}, Null: isnull}
 			case "FLOAT":
 				dataTmp[i] = &pb.InterFaceType{Response: &pb.InterFaceType_Float{Float: val.(float32)}, Null: isnull}
 			case "DOUBLE":
