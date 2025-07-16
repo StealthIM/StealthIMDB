@@ -16,15 +16,17 @@ else
 	DEFAULT_BUILD_FILENAME := StealthIMDB
 endif
 
+.PHONY: run
 run: build
 	./bin/$(DEFAULT_BUILD_FILENAME)
 
 StealthIM.DBGateway/db_gateway_grpc.pb.go StealthIM.DBGateway/db_gateway.pb.go: proto/db_gateway.proto
 	$(PROTOCCMD) --plugin=protoc-gen-go=$(PROTOGEN_PATH) --plugin=protoc-gen-go-grpc=$(PROTOGENGRPC_PATH) --go-grpc_out=. --go_out=. proto/db_gateway.proto
 
+.PHONY: proto
 proto: ./StealthIM.DBGateway/db_gateway_grpc.pb.go ./StealthIM.DBGateway/db_gateway.pb.go
 
-
+.PHONY: build
 build: ./bin/$(DEFAULT_BUILD_FILENAME)
 
 ./bin/StealthIMDB.exe: $(GO_FILES) proto
@@ -33,9 +35,11 @@ build: ./bin/$(DEFAULT_BUILD_FILENAME)
 ./bin/StealthIMDB: $(GO_FILES) proto
 	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o ./bin/StealthIMDB
 
+.PHONY: build_win build_linux
 build_win: ./bin/StealthIMDB.exe
 build_linux: ./bin/StealthIMDB
 
+.PHONY: docker_run
 docker_run:
 	docker-compose up
 
@@ -45,10 +49,13 @@ docker_run:
 	zstd ./bin/StealthIMDB.docker -19
 	@rm ./bin/StealthIMDB.docker
 
+.PHONY: build_docker
 build_docker: ./bin/StealthIMDB.docker.zst
 
+.PHONY: release
 release: build_win build_linux build_docker
 
+.PHONY: clean
 clean:
 	@rm -rf ./StealthIM.DBGateway
 	@rm -rf ./bin
