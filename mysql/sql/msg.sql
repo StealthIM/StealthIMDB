@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS msg (
     msg_content TEXT,
     msg_msgTime TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6),
     msg_uid INT UNSIGNED,
+    msg_sender VARCHAR(64),
     msg_fileHash VARCHAR(128),
     msg_type SMALLINT UNSIGNED,
     INDEX idx_msg_time (msg_msgTime DESC), -- 时间索引
