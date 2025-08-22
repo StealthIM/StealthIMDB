@@ -30,11 +30,12 @@ log = true         # 启用日志，调试功能，上线建议关闭
 EOF
 
 cp ../bin/StealthIMDB ./test_cache/db/StealthIMDB
+chmod +x ./test_cache/db/StealthIMDB
 
 echo "Start DB"
 cd ${NOWPWD}/test_cache/db && ./StealthIMDB --config=${NOWPWD}/test_cache/db/config.toml > ${NOWPWD}/test_cache/db.log 2>&1 &
 
-sleep 5s
+sleep 20s
 echo "Start Test"
 echo "::group::Test Log"
 (pytest test_db_gateway.py -v; echo "$?">${NOWPWD}/test_cache/.ret) | tee ${NOWPWD}/test_cache/test.log
