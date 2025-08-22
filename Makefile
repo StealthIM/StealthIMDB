@@ -60,3 +60,8 @@ clean:
 	@rm -rf ./StealthIM.DBGateway
 	@rm -rf ./bin
 	@rm -rf ./__debug*
+
+.PHONY: debug_proto
+debug_proto:
+	cd test && python -m grpc_tools.protoc -I. --python_out=. --mypy_out=.  --grpclib_python_out=. --proto_path=../proto db_gateway.proto
+

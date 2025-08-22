@@ -3,3 +3,6 @@ bin
 config.toml
 __debug*
 cfg
+__pycache__
+.pytest_cache
+db_gateway_*.py*
