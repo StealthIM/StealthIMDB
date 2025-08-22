@@ -13,92 +13,170 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: true
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.24.2'
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.24.2"
 
-    - name: Enable Go Modules and Download Dependencies
-      run: |
-        go mod tidy
-        go mod download
+      - name: Enable Go Modules and Download Dependencies
+        run: |
+          go mod tidy
+          go mod download
 
-    - name: Install protoc
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y protobuf-compiler
-        go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-        go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-        echo "$GOPATH/bin" >> $GITHUB_PATH
+      - name: Install protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          echo "$GOPATH/bin" >> $GITHUB_PATH
 
-    - name: Install Docker
-      run: |
-        sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-        sudo apt-get update
-        sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+      - name: Install Docker
+        run: |
+          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
-    - name: Install Docker Compose
-      run: |
-        sudo wget "https://github.com/docker/compose/releases/download/v2.33.1/docker-compose-linux-x86_64" -O /usr/bin/docker-compose
-        sudo chmod +x /usr/bin/docker-compose
+      - name: Install Docker Compose
+        run: |
+          sudo wget "https://github.com/docker/compose/releases/download/v2.33.1/docker-compose-linux-x86_64" -O /usr/bin/docker-compose
+          sudo chmod +x /usr/bin/docker-compose
 
-    - name: Build and Release
-      run: make release
+      - name: Build and Release
+        run: make release
 
-    - name: Upload artifacts 1
-      uses: actions/upload-artifact@v4
-      with:
-        name: StealthIMDB
-        path: ./bin/StealthIMDB
-          
-    - name: Upload artifacts 2 
-      uses: actions/upload-artifact@v4
-      with:
-        name: StealthIMDB.exe
-        path: ./bin/StealthIMDB.exe
-          
-    - name: Upload artifacts 3
-      uses: actions/upload-artifact@v4
-      with:
-        name: StealthIMDB.docker.zst
-        path: ./bin/StealthIMDB.docker.zst
+      - name: Upload artifacts 1
+        uses: actions/upload-artifact@v4
+        with:
+          name: StealthIMDB
+          path: ./bin/StealthIMDB
+
+      - name: Upload artifacts 2
+        uses: actions/upload-artifact@v4
+        with:
+          name: StealthIMDB.exe
+          path: ./bin/StealthIMDB.exe
+
+      - name: Upload artifacts 3
+        uses: actions/upload-artifact@v4
+        with:
+          name: StealthIMDB.docker.zst
+          path: ./bin/StealthIMDB.docker.zst
+
+  run-test:
+    runs-on: ubuntu-latest
+    needs: release
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: wMTs5aXwfjndimtT
+          MYSQL_DATABASE: test_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:6.0
+        env:
+          REDIS_PASSWORD: wMTs5aXwfjndimtT
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Create dir
+        run: |
+          mkdir bin -p
+
+      - name: Download File
+        uses: actions/download-artifact@v4
+        with:
+          name: StealthIMSession
+          path: bin
+
+      - name: Set up Python 3.13.6
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13.6"
+
+      - name: Install dependencies
+        run: |
+          sudo pip install pytest pytest-asyncio
+          export PATH="$PATH:~/.local/bin:/opt/hostedtoolcache/Python/3.13.2/x64/bin"
+          pip install grpcio==1.72.0rc1
+          pip install grpcio-tools==1.72.0rc1 # 解决版本问题
+          pip install grpclib
+          pip install mypy_protobuf
+          sudo pip install grpcio==1.72.0rc1
+          sudo pip install grpcio-tools==1.72.0rc1 # 解决版本问题
+          sudo pip install grpclib
+          sudo pip install mypy_protobuf
+
+          echo -e '#!/usr/bin/python\nfrom grpclib.plugin.main import main\nimport sys\nsys.exit(main())' > /opt/hostedtoolcache/Python/3.13.2/x64/bin/protoc-gen-grpclib_python
+          echo -e '#!/usr/bin/python\nfrom mypy_protobuf.main import main\nimport sys\nsys.exit(main())' > /opt/hostedtoolcache/Python/3.13.2/x64/bin/protoc-gen-mypy
+          chmod +x /opt/hostedtoolcache/Python/3.13.2/x64/bin/protoc-gen-grpclib_python
+          chmod +x /opt/hostedtoolcache/Python/3.13.2/x64/bin/protoc-gen-mypy
+
+      - name: Build proto
+        run: |
+          export PATH="$PATH:~/.local/bin:/opt/hostedtoolcache/Python/3.13.2/x64/bin"
+          sudo make debug_proto
+
+      - name: Run Test
+        run: |
+          cd test
+          sudo bash ./run.sh
 
   upload-package:
     runs-on: ubuntu-latest
-    needs: release
+    needs: run-test
     permissions:
       packages: write
 
     steps:
-    - name: Download File
-      uses: actions/download-artifact@v4
-      with:
-        name: StealthIMDB.docker.zst
+      - name: Download File
+        uses: actions/download-artifact@v4
+        with:
+          name: StealthIMDB.docker.zst
 
-    - name: Unpack File
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y zstd
-        zstd -d StealthIMDB.docker.zst
+      - name: Unpack File
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zstd
+          zstd -d StealthIMDB.docker.zst
 
-    - name: Load Docker image
-      run: docker load -i StealthIMDB.docker
+      - name: Load Docker image
+        run: docker load -i StealthIMDB.docker
 
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.PKGTOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.PKGTOKEN }}
 
-    - name: Tag and push Docker image
-      run: |
-        docker tag $(docker images -q | head -n 1) ghcr.io/$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')/$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')/stealthimdb-app:latest
-        docker push ghcr.io/$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')/$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')/stealthimdb-app:latest
+      - name: Tag and push Docker image
+        run: |
+          docker tag $(docker images -q | head -n 1) ghcr.io/$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')/$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')/stealthimdb-app:latest
+          docker push ghcr.io/$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')/$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')/stealthimdb-app:latest

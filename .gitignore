@@ -6,3 +6,4 @@ cfg
 __pycache__
 .pytest_cache
 db_gateway_*.py*
+test_cache
