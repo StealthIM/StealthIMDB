@@ -30,6 +30,7 @@ type MysqlConfig struct {
 	DBgroups   MysqlNodeConfig `toml:"db_groups"`
 	DBfile     MysqlNodeConfig `toml:"db_file"`
 	DBsession  MysqlNodeConfig `toml:"db_session"`
+	Prefix     string          `toml:"prefix"`
 }
 
 // MysqlNodeConfig mysql链接节点

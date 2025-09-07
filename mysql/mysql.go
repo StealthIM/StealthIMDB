@@ -46,7 +46,7 @@ func autoReconn(connID int) {
 
 func conn(connID int) error {
 	log.Printf("[MySQL]Connect to MySQL [%s]\n", dbs[connID])
-	dbinfo := cfgArgs[connID].User + ":" + cfgArgs[connID].Password + "@tcp(" + cfgArgs[connID].Host + ":" + strconv.Itoa(cfgArgs[connID].Port) + ")/" + dbs[connID] + "?charset=utf8mb4&parseTime=True&loc=Local"
+	dbinfo := cfgArgs[connID].User + ":" + cfgArgs[connID].Password + "@tcp(" + cfgArgs[connID].Host + ":" + strconv.Itoa(cfgArgs[connID].Port) + ")/" + cfg.Mysql.Prefix + dbs[connID] + "?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := sql.Open("mysql", dbinfo)
 	if err != nil {
 		log.Printf("[MySQL]Error connecting to MySQL [%s]: %+v\n", dbs[connID], err)

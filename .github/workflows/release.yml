@@ -1,0 +1,43 @@
+name: Release Docker Image
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.PKGTOKEN }}
+
+      - name: Set up VERSION environment variable
+        run: echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+
+      - name: Set up IMAGE_NAME environment variable
+        run: |
+          ORG_REPO="${{ github.repository }}"
+          ORG=$(echo "${ORG_REPO}" | cut -d '/' -f 1 | tr '[:upper:]' '[:lower:]')
+          REPO=$(echo "${ORG_REPO}" | cut -d '/' -f 2 | tr '[:upper:]' '[:lower:]')
+          IMAGE_NAME="ghcr.io/${ORG}/${REPO}/${REPO}-app"
+          echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
+
+      - name: Pull latest image
+        run: docker pull ${{ env.IMAGE_NAME }}:latest
+
+      - name: Tag image with release version
+        run: docker tag ${{ env.IMAGE_NAME }}:latest ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+
+      - name: Push image to GitHub Container Registry
+        run: docker push ${{ env.IMAGE_NAME }}:${{ env.VERSION }}

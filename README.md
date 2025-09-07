@@ -56,6 +56,7 @@ maxconn = 50                 # 最大连接数
 minconn = 10                 # 最小连接数
 user = "root"                # 用户名，首次建议使用root，之后可以创建新用户
 password = "<YOUR_PASSWORD>" # 密码
+prefix = ""                  # 数据库前缀
 
 #     下面单独设置每一个数据库的配置
 #   若某项设置未填写则使用上方全局配置

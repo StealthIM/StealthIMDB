@@ -79,7 +79,7 @@ func Init() error {
 	// 	}
 	// }
 	for i := 1; i <= dbCnt; i++ {
-		initArgs[0] = "CREATE DATABASE IF NOT EXISTS `" + dbs[i] + "`;"
+		initArgs[0] = "CREATE DATABASE IF NOT EXISTS `" + cfg.Mysql.Prefix + dbs[i] + "`;"
 		for {
 			err := initConn(i)
 			if err == nil {
